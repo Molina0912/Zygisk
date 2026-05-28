@@ -38,39 +38,48 @@ echo "Compilando con ndk-build..."
     NDK_OUT=obj \
     -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)"
 
-# Crear módulo Magisk
+# Crear estructura del módulo Magisk en una carpeta de staging
+STAGING="out/staging"
 echo "Creando módulo Magisk..."
-mkdir -p "out/$MODULE_NAME/zygisk"
+rm -rf "$STAGING"
+mkdir -p "$STAGING/zygisk"
 
-# Copiar archivos del módulo
-cp module.prop "out/$MODULE_NAME/"
-cp customize.sh "out/$MODULE_NAME/"
-cp system.prop "out/$MODULE_NAME/"
-cp service.sh "out/$MODULE_NAME/"
+# Copiar archivos del módulo a la raíz del staging
+cp module.prop   "$STAGING/"
+cp customize.sh  "$STAGING/"
+cp system.prop   "$STAGING/"
+cp service.sh    "$STAGING/"
 
 # Copiar bibliotecas compiladas
 for ABI in arm64-v8a armeabi-v7a x86 x86_64; do
     SRC="libs/$ABI/libplayintegrity.so"
     if [ -f "$SRC" ]; then
-        cp "$SRC" "out/$MODULE_NAME/zygisk/$ABI.so"
+        cp "$SRC" "$STAGING/zygisk/$ABI.so"
         echo "  + zygisk/$ABI.so"
     else
         echo "  ! Falta $SRC"
     fi
 done
 
-# customize.sh espera libs/$ARCH/libplayintegrity.so durante la instalación,
-# así que también incluimos esa estructura en el zip final.
-mkdir -p "out/$MODULE_NAME/libs"
-cp -R libs/* "out/$MODULE_NAME/libs/" 2>/dev/null || true
+# Asegurar permisos correctos
+chmod 0755 "$STAGING/customize.sh" "$STAGING/service.sh" 2>/dev/null || true
+find "$STAGING/zygisk" -type f -name "*.so" -exec chmod 0755 {} \; 2>/dev/null || true
 
-# Empaquetar
-cd out
-rm -f "$MODULE_NAME-$MODULE_VERSION.zip"
-zip -r "$MODULE_NAME-$MODULE_VERSION.zip" "$MODULE_NAME"
-cd ..
+# Empaquetar: los archivos van en la RAÍZ del zip, no dentro de una subcarpeta.
+# Magisk requiere que module.prop esté en la raíz del zip.
+ZIP_OUT="$PWD/out/$MODULE_NAME-$MODULE_VERSION.zip"
+rm -f "$ZIP_OUT"
+( cd "$STAGING" && zip -r "$ZIP_OUT" . -x "*.DS_Store" )
+
+# Limpiar staging
+rm -rf "$STAGING"
 
 echo "=========================================="
 echo "  Compilación completada"
-echo "  Módulo: out/$MODULE_NAME-$MODULE_VERSION.zip"
+echo "  Módulo: $ZIP_OUT"
 echo "=========================================="
+
+# Mostrar contenido del zip para verificar
+echo ""
+echo "Contenido del ZIP:"
+unzip -l "$ZIP_OUT"
