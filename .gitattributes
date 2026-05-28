@@ -1,0 +1,10 @@
+# Forzar LF para scripts y código que se ejecuta en Linux/Android
+*.sh        text eol=lf
+*.prop      text eol=lf
+*.mk        text eol=lf
+*.cpp       text eol=lf
+*.h         text eol=lf
+*.hpp       text eol=lf
+*.yml       text eol=lf
+*.md        text eol=lf
+.gitignore  text eol=lf

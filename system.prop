@@ -1,0 +1,26 @@
+# Play Integrity Bypass - Propiedades del sistema
+
+# Ocultar estado de desbloqueo de bootloader
+ro.boot.verifiedbootstate=green
+ro.boot.vbmeta.device_state=locked
+ro.boot.veritymode=enforcing
+ro.boot.flash.locked=1
+
+# Spoof de dispositivo certificado
+ro.product.first_api_level=32
+ro.build.selinux=0
+ro.build.tags=release-keys
+ro.build.type=user
+ro.build.keys=release-keys
+
+# Ocultar Magisk
+ro.magisk.disable=true
+persist.magisk.disable=true
+
+# Play Protect
+ro.com.google.gmsversion=android_202401
+ro.com.google.clientidbase=android-google
+
+# Ocultar root
+ro.secure=1
+ro.debuggable=0

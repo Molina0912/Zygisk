@@ -1,0 +1,7 @@
+id=playintegritybypass
+name=Play Integrity Bypass
+version=v1.2.0
+versionCode=1200
+author=CustomDev
+description=Bypass completo para Google Play Integrity API. Resuelve estados UNEVALUATED y oculta root/magisk. Compatible con Android 11-15.
+updateJson=https://raw.githubusercontent.com/user/repo/main/update.json

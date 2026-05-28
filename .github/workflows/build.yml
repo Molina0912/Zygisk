@@ -1,0 +1,61 @@
+name: Build Magisk Module
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+          add-to-path: false
+
+      - name: Show NDK info
+        run: |
+          echo "ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}"
+          ls "${{ steps.setup-ndk.outputs.ndk-path }}"
+
+      - name: Make scripts executable
+        run: chmod +x build.sh
+
+      - name: Build module
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: ./build.sh
+
+      - name: List output
+        run: |
+          ls -la out/ || true
+          ls -la libs/ || true
+
+      - name: Upload module ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlayIntegrityBypass-module
+          path: out/*.zip
+          if-no-files-found: error
+
+      - name: Upload raw libs
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlayIntegrityBypass-libs
+          path: libs/
+          if-no-files-found: warn
