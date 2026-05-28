@@ -5,22 +5,25 @@
 
 namespace zygisk {
 
+// Forward declarations a nivel de namespace
+struct Api;
+struct AppSpecializeArgs;
+struct ServerSpecializeArgs;
+
 class ModuleBase {
 public:
-    struct Api;
-    struct AppSpecializeArgs;
-    struct ServerSpecializeArgs;
-    
-    virtual void onLoad(Api* api, JNIEnv* env) {}
-    virtual void preAppSpecialize(AppSpecializeArgs* args) {}
-    virtual void postAppSpecialize(const AppSpecializeArgs* args) {}
-    virtual void preServerSpecialize(ServerSpecializeArgs* args) {}
-    virtual void postServerSpecialize(const ServerSpecializeArgs* args) {}
+    virtual ~ModuleBase() = default;
+
+    virtual void onLoad(Api* /*api*/, JNIEnv* /*env*/) {}
+    virtual void preAppSpecialize(AppSpecializeArgs* /*args*/) {}
+    virtual void postAppSpecialize(const AppSpecializeArgs* /*args*/) {}
+    virtual void preServerSpecialize(ServerSpecializeArgs* /*args*/) {}
+    virtual void postServerSpecialize(const ServerSpecializeArgs* /*args*/) {}
 };
 
 struct Api {
     void* impl;
-    
+
     void (*hookJniNativeMethods)(JNIEnv*, const char*, JNINativeMethod*, int);
     void (*pltHookRegister)(const char*, const char*, void*, void**);
     void (*pltHookCommit)();
@@ -50,12 +53,12 @@ struct ServerSpecializeArgs {
     jlong& effective_capabilities;
 };
 
+} // namespace zygisk
+
 #define REGISTER_ZYGISK_MODULE(className) \
     extern "C" [[gnu::visibility("default")]] void zygisk_module_entry(zygisk::Api* api, JNIEnv* env) { \
         static className module; \
         module.onLoad(api, env); \
     }
-
-} // namespace zygisk
 
 #endif // ZYGISK_HPP

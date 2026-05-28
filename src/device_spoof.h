@@ -1,6 +1,8 @@
 #ifndef DEVICE_SPOOF_H
 #define DEVICE_SPOOF_H
 
+#include <cstddef>
+
 struct DeviceProfile {
     const char* manufacturer;
     const char* model;
