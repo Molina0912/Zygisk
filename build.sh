@@ -50,6 +50,9 @@ cp customize.sh  "$STAGING/"
 cp system.prop   "$STAGING/"
 cp service.sh    "$STAGING/"
 
+# Copiar META-INF (necesario para que Magisk reconozca el zip como módulo)
+cp -R META-INF   "$STAGING/"
+
 # Copiar bibliotecas compiladas
 for ABI in arm64-v8a armeabi-v7a x86 x86_64; do
     SRC="libs/$ABI/libplayintegrity.so"
@@ -63,6 +66,7 @@ done
 
 # Asegurar permisos correctos
 chmod 0755 "$STAGING/customize.sh" "$STAGING/service.sh" 2>/dev/null || true
+chmod 0755 "$STAGING/META-INF/com/google/android/update-binary" 2>/dev/null || true
 find "$STAGING/zygisk" -type f -name "*.so" -exec chmod 0755 {} \; 2>/dev/null || true
 
 # Empaquetar: los archivos van en la RAÍZ del zip, no dentro de una subcarpeta.
@@ -79,7 +83,10 @@ echo "  Compilación completada"
 echo "  Módulo: $ZIP_OUT"
 echo "=========================================="
 
-# Mostrar contenido del zip para verificar
+# Mostrar contenido del zip para verificar (sin abortar el script)
+echo ""
+echo "Listado de out/:"
+ls -la out/ || true
 echo ""
 echo "Contenido del ZIP:"
-unzip -l "$ZIP_OUT"
+unzip -l "$ZIP_OUT" || true
