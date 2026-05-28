@@ -9,7 +9,7 @@ LOCAL_SRC_FILES := main.cpp \
                    utils.cpp
 LOCAL_LDLIBS    := -llog -landroid
 LOCAL_CFLAGS    := -O2 -fvisibility=hidden -fPIC -Wno-unused-parameter
-LOCAL_CPPFLAGS  := -std=c++17
+LOCAL_CPPFLAGS  := -std=c++20
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 
 include $(BUILD_SHARED_LIBRARY)
