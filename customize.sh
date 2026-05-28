@@ -13,10 +13,23 @@ if [ "$MAGISK_VER_CODE" -lt 24000 ]; then
     abort
 fi
 
-# Verificar arquitectura
+# Magisk expone $ARCH en formato corto: arm, arm64, x86, x64.
+# Mapearlo al nombre de ABI (carpeta zygisk/<abi>.so).
 case "$ARCH" in
-    arm64-v8a|armeabi-v7a|x86|x86_64)
-        ui_print "Arquitectura detectada: $ARCH"
+    arm64)
+        ABI=arm64-v8a
+        ;;
+    arm)
+        ABI=armeabi-v7a
+        ;;
+    x86)
+        ABI=x86
+        ;;
+    x64|x86_64)
+        ABI=x86_64
+        ;;
+    arm64-v8a|armeabi-v7a)
+        ABI="$ARCH"
         ;;
     *)
         ui_print "Arquitectura no soportada: $ARCH"
@@ -24,30 +37,23 @@ case "$ARCH" in
         ;;
 esac
 
-# Verificar que la biblioteca para esta arquitectura exista
-ZYGISK_LIB="$MODPATH/zygisk/$ARCH.so"
+ui_print "Arquitectura detectada: $ARCH (ABI=$ABI)"
+
+ZYGISK_LIB="$MODPATH/zygisk/$ABI.so"
 if [ ! -f "$ZYGISK_LIB" ]; then
-    # Compatibilidad: si el zip trae libs/$ARCH/libplayintegrity.so, copiarlo
-    ALT_LIB="$MODPATH/libs/$ARCH/libplayintegrity.so"
-    if [ -f "$ALT_LIB" ]; then
-        ui_print "Copiando biblioteca desde libs/$ARCH..."
-        mkdir -p "$MODPATH/zygisk"
-        cp "$ALT_LIB" "$ZYGISK_LIB"
-    else
-        ui_print "Error: Biblioteca no encontrada para $ARCH"
-        abort
-    fi
+    ui_print "Error: Biblioteca no encontrada: zygisk/$ABI.so"
+    abort
 fi
+
+# Eliminar las .so de otras arquitecturas para ahorrar espacio
+for f in "$MODPATH"/zygisk/*.so; do
+    [ "$f" = "$ZYGISK_LIB" ] && continue
+    rm -f "$f"
+done
 
 # Configurar permisos
 set_perm_recursive "$MODPATH" 0 0 0755 0644
 set_perm "$ZYGISK_LIB" 0 0 0755
-
-# Limpiar archivos temporales
-rm -rf "$MODPATH/libs"
-rm -rf "$MODPATH/src"
-rm -rf "$MODPATH/obj"
-rm -rf "$MODPATH/build"
 
 ui_print "========================================"
 ui_print "Instalación completada"
